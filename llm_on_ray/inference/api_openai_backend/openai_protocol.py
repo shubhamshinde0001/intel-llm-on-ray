@@ -397,7 +397,7 @@ class CompletionRequest(BaseModel):
     user: Optional[str] = None
 
 
-class ChatCompletionRequest(BaseModel):
+class vllm_ChatCompletionRequest(BaseModel):
     model: str
     messages: List[ChatMessage]
     temperature: Optional[float] = None
