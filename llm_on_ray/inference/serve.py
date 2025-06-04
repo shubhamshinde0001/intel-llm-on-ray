@@ -171,6 +171,7 @@ def main(argv=None):
         sys.exit(1)
 
     args = parser.parse_args(argv)
+    
 
     all_models_name = list(all_models.keys())
     if args.list_model_ids:
@@ -191,6 +192,8 @@ def main(argv=None):
         host = "127.0.0.1" if args.serve_local_only else "0.0.0.0"
         print("Service is running with deployments:" + str(deployments))
         print("Service is running models:" + str(model_list))
+
+        
 
         openai_serve_run(
             deployments,
