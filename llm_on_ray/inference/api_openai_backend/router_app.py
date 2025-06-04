@@ -52,7 +52,7 @@ from llm_on_ray.inference.api_openai_backend.openai_protocol import (
     Prompt,
     ModelResponse,
     CompletionRequest,
-    ChatCompletionRequest,
+    vllm_ChatCompletionRequest,
     ChatCompletionResponse,
     CompletionResponse,
     DeltaChoices,
@@ -72,7 +72,7 @@ logger = get_logger(__name__)
 try:
     from vllm.entrypoints.openai.serving_chat import OpenAIServingChat
     from vllm.entrypoints.openai.protocol import (
-        ChatCompletionRequest as vllm_ChatCompletionRequest,
+        vllm_ChatCompletionRequest as vllm_ChatCompletionRequest,
         ChatCompletionResponse as vllm_ChatCompletionResponse,
     )
     from llm_on_ray.inference.inference_config import (
@@ -163,7 +163,7 @@ async def _completions_wrapper(
 
 async def _chat_completions_wrapper(
     completion_id: str,
-    body: ChatCompletionRequest,
+    body: vllm_ChatCompletionRequest,
     response: Response,
     generator: AsyncGenerator[ModelResponse, None],
 ) -> AsyncGenerator[str, None]:
@@ -363,7 +363,7 @@ class Router:
     @router_app.post("/v1/chat/completions")
     async def chat(
         self,
-        body: Union[ChatCompletionRequest, vllm_ChatCompletionRequest],
+        body: Union[vllm_ChatCompletionRequest, vllm_ChatCompletionRequest],
         raw_request: Request,
         response: FastAPIResponse,
     ):
