@@ -38,7 +38,7 @@ from llm_on_ray.inference.api_openai_backend.query_client import RouterQueryClie
 from llm_on_ray.inference.api_openai_backend.router_app import Router, router_app
 
 
-def router_application(deployments, model_list, max_ongoing_requests, max_num_seqs):
+def router_application(deployments, model_list, max_ongoing_requests, max_num_seqs, application_name, openai_route_prefix):
     """Create a Router Deployment.
 
     Router Deployment will point to a Serve Deployment for each specified base model,
@@ -61,27 +61,38 @@ def router_application(deployments, model_list, max_ongoing_requests, max_num_se
         )
 
     RouterDeployment = serve.deployment(
-        route_prefix="/",
-        max_ongoing_requests=total_num_replica
-        * (
-            (max_ongoing_requests if max_ongoing_requests else max_num_concurrent_query) + 1
-        ),  # Maximum backlog for a single replica
-    )(serve.ingress(router_app)(Router))
+    max_ongoing_requests=total_num_replica
+    * (
+        (max_ongoing_requests if max_ongoing_requests else max_num_concurrent_query) + 1
+    ))(serve.ingress(router_app)(Router))
 
-    return RouterDeployment.bind(merged_client, model_list, max_num_seqs)
+# Bind the deployment as usual
+    bound_router = RouterDeployment.bind(merged_client, model_list, max_num_seqs)
+
+# Then run it with route_prefix at the serve.run level
+    serve.run(
+    bound_router,
+    name=application_name,
+  # route_prefix=openai_route_prefix,
+)
+
 
 
 def openai_serve_run(
     deployments,
     model_list,
     host,
-    route_prefix,
+    openai_route_prefix,
     application_name,
     port,
     max_ongoing_requests,
     max_num_seqs,
+    
 ):
-    router_app = router_application(deployments, model_list, max_ongoing_requests, max_num_seqs)
+    router_app = router_application(
+    deployments, model_list, max_ongoing_requests, max_num_seqs, application_name, openai_route_prefix
+)
+
 
     serve.start(http_options={"host": host, "port": port})
     serve.run(
